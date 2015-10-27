@@ -135,19 +135,80 @@ module type S = sig
     method virtual content_types_accepted : ((string * ('body acceptor)) list, 'body) op
 
     method resource_exists : (bool, 'body) op
+    (** Returning [false] will result in a [404 Not Found].
+
+        {i Default}: [true] *)
+
     method service_available : (bool, 'body) op
+    (** Returning [false] will result in a [503 Service Unavilable].
+
+        {i Default}: [true] *)
+
     method is_authorized : (auth, 'body) op
+
     method forbidden : (bool, 'body) op
+    (** Returning [true] will result in a [403 Forbidden].
+
+        {i Default}: [false] *)
+
     method malformed_request : (bool, 'body) op
+    (** Returning [true] will result in a [400 Bad Request].
+
+        {i Default}: [false] *)
+
     method uri_too_long : (bool, 'body) op
+    (** Returning [true] will result in a [414 Request-URI Too Long].
+
+        {i Default}: [false] *)
+
     method known_content_type : (bool, 'body) op
+    (** Returning [false] will result in a [415 Unsupported Media Type].
+
+        {i Default}: [true] *)
+
     method valid_content_headers : (bool, 'body) op
+    (** Returning [false] will result in a [501 Not Implemented].
+
+        {i Default}: [true] *)
+
     method valid_entity_length : (bool, 'body) op
+    (** Returning [false] will result in [413 Request Entity Too Large].
+
+        {i Default} : [false] *)
+
     method options : ((string * string) list, 'body) op
-    method allowed_methods : (Code.meth list, 'body) op
+    (** If the [`OPTIONS] method is supported by this resource, the returned
+        list of header name/value pairs will be included in responses to
+        [`OPTIONS] requests.
+
+        {i Default}: [\[("allow", self#allowed_methods)\]] *)
+
     method known_methods : (Code.meth list, 'body) op
+    (** A request to this resource whose method is not included in the returned
+        list will result in a [501 Not Implemented].
+
+        {i Default}: [\[`GET; `HEAD; `POST; `PUT; `DELETE; `Other "TRACE"; `Other "CONNECT"; `OPTIONS\]] *)
+
+    method allowed_methods : (Code.meth list, 'body) op
+    (** A request to this resource whose method is not included in the returned
+        list will result in a [405 Method Not Allowed]. The response will
+        include an ["allow"] header that lists the allowed methods.
+
+        {i Default}: [\[`GET; `HEAD\]] *)
+
     method delete_resource : (bool, 'body) op
+    (** [`DELETE] requests will call this method. Returning [true] indicates
+        that the deletion succeeded.
+
+        {i Default}: [false] *)
+
     method delete_completed : (bool, 'body) op
+    (** Only successful {{!delete_resource}delete_resource} calls will result
+        in a call to this method. Return [false] if the deletion was accepted
+        but cannot yet be guaranteed to have finished.
+
+        {i Default}: [true] *)
+
     method process_post : (bool, 'body) op
     method language_available : (bool, 'body) op
     method charsets_provided : ((string * ('body -> 'body)) list, 'body) op
@@ -183,7 +244,7 @@ module type S = sig
       URI path. The form that the individal route entries takes this the
       following:
 
-        {[(pattern, exact, resource_constructor]}
+        {[(pattern, exact, resource_constructor)]}
 
       The [pattern] itself is a list of literal ([`Lit]) or variable matches
       ([`Var]) that the URI path should satify. For example, a route entry that
