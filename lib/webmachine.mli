@@ -262,6 +262,15 @@ module type S = sig
     method finish_request : (unit, 'body) op
     (** This method is called just before the final response is constructed and
         returned. *)
+
+    method post_is_create : (bool, 'body) op
+    (** If POST requests should be treated as a request to put content into a (potentially new) resource. *)
+
+    method allow_missing_post : (bool, 'body) op
+    (** If the resource accepts [`POST`] requests to nonexistent resources, then this should return [true]. *)
+
+    method create_path : (string, 'body) op
+    (** Returning valid URI path, called if [post_is_create] returns [true]. *)
   end
 
   val to_handler :
